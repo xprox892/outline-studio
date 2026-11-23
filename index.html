@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101010">
+  <title>OUTLINE STUDIO — Creative design</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#home">OUTLINE<span>.</span></a>
+  <button class="menu-btn" id="menuBtn" aria-label="Открыть меню">☰</button>
+  <nav id="nav">
+    <a href="#work">Работы</a><a href="#services">Услуги</a>
+    <a href="#about">О студии</a><button class="nav-order" data-open-order>Сделать заказ ↗</button>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="home">
+    <div class="eyebrow">INDEPENDENT CREATIVE DESIGN STUDIO</div>
+    <h1>ИДЕИ, КОТОРЫЕ<br><em>ВЫДЕЛЯЮТ.</em></h1>
+    <p>Создаём визуальную индивидуальность для заведений, брендов и проектов.</p>
+    <div class="hero-actions">
+      <button class="primary" data-open-order>Обсудить проект ↗</button>
+      <a class="text-link" href="#work">Смотреть работы ↓</a>
+    </div>
+    <div class="hero-foot"><span>LOGO / BRANDING / APPAREL / MERCH</span><span>EST. 2026</span></div>
+  </section>
+
+  <section class="section" id="work">
+    <div class="section-head"><div><div class="eyebrow">SELECTED PROJECTS</div><h2>Избранные работы</h2></div><span class="muted">01 — 04</span></div>
+    <div class="projects">
+      <article class="project project-one"><div class="mock-logo">C<span>°</span>FFEE</div><div class="project-meta"><b>01 / COFFEE BRAND</b><span>Айдентика · Упаковка</span></div></article>
+      <article class="project project-two"><div class="mock-logo serif">NOIR<br>LOUNGE</div><div class="project-meta"><b>02 / HOSPITALITY</b><span>Логотип · Мерч</span></div></article>
+      <article class="project project-three"><div class="mock-logo condensed">FORM<br>STUDIO</div><div class="project-meta"><b>03 / APPAREL</b><span>Одежда · Графика</span></div></article>
+      <article class="project project-four"><div class="mock-logo">M<span>—</span>ENU</div><div class="project-meta"><b>04 / RESTAURANT</b><span>Меню · Фирменный стиль</span></div></article>
+    </div>
+    <p class="notice">Демонстрационные концепты для макета. Замени их на реальные проекты перед публикацией.</p>
+  </section>
+
+  <section class="section services" id="services">
+    <div class="eyebrow">WHAT WE DO</div><h2>Создаём образ<br>твоего бизнеса.</h2>
+    <div class="service-list">
+      <div><span>01</span><b>Логотип и айдентика</b><i>↗</i></div>
+      <div><span>02</span><b>Дизайн одежды и мерча</b><i>↗</i></div>
+      <div><span>03</span><b>Меню и полиграфия</b><i>↗</i></div>
+      <div><span>04</span><b>Оформление соцсетей</b><i>↗</i></div>
+      <div><span>05</span><b>Индивидуальные проекты</b><i>↗</i></div>
+    </div>
+  </section>
+
+  <section class="cta" id="about">
+    <div class="eyebrow">LET'S CREATE SOMETHING</div>
+    <h2>ТВОЙ БРЕНД.<br><em>ТВОИ ПРАВИЛА.</em></h2>
+    <p>Расскажи о своей идее — обсудим, как воплотить её в дизайн.</p>
+    <button class="primary" data-open-order>Оставить заявку ↗</button>
+  </section>
+</main>
+
+<footer><a class="brand" href="#home">OUTLINE<span>.</span></a><span>CREATIVE DESIGN STUDIO · 2026</span><a href="#home">Наверх ↑</a></footer>
+
+<div class="modal-backdrop" id="orderModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="close" id="closeModal" aria-label="Закрыть">×</button>
+    <div class="eyebrow">START A PROJECT</div><h2 id="modalTitle">Расскажите<br>о вашем проекте.</h2>
+    <form id="orderForm">
+      <label>Название заведения<input name="venue" required placeholder="Например, Coffee House"></label>
+      <label>Что нужно сделать?
+        <select name="service" required>
+          <option value="">Выберите услугу</option><option>Дизайн логотипа</option>
+          <option>Дизайн одежды / мерча</option><option>Фирменный стиль</option>
+          <option>Меню / полиграфия</option><option>Другое</option>
+        </select>
+      </label>
+      <label>Ваше имя<input name="name" required placeholder="Имя"></label>
+      <label>Телефон или Telegram<input name="contact" required placeholder="@username или +..."></label>
+      <label>Комментарий <textarea name="comment" rows="3" placeholder="Коротко опишите задачу (необязательно)"></textarea></label>
+      <button class="primary full" type="submit">Отправить заявку ↗</button>
+      <p class="form-note" id="formNote">В демо-версии заявки сохраняются только в этом браузере.</p>
+    </form>
+  </div>
+</div>
+<script src="app.js"></script>
+</body></html>
