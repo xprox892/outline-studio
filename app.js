@@ -2,13 +2,37 @@
 const SUPABASE_URL = 'https://numaxcjgpvqmaxzvyocf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_U3uKkX6IG0qQes6cIR4otQ_dFGH1kIE';
 
+const modal = document.getElementById('orderModal');
 const form = document.getElementById('orderForm');
 const formNote = document.getElementById('formNote');
 
-if (form && formNote) {
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+function openModal() {
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
 
+function closeModal() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+document.querySelectorAll('[data-open-order]').forEach(button => {
+  button.addEventListener('click', openModal);
+});
+
+document.getElementById('closeModal')?.addEventListener('click', closeModal);
+
+modal?.addEventListener('click', event => {
+  if (event.target === modal) closeModal();
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeModal();
+});
+
+if (form && formNote) {
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
     if (!form.reportValidity()) return;
 
     const button = form.querySelector('button[type="submit"]');
@@ -46,18 +70,17 @@ if (form && formNote) {
       }
 
       form.reset();
-
       formNote.textContent = result.telegramSent
-        ? 'Заявка отправлена! Уведомление пришло в Telegram.'
-        : 'Заявка сохранена, но уведомление в Telegram не отправлено.';
+        ? 'Заявка отправлена! Проверь Telegram.'
+        : 'Заявка сохранена, но Telegram не отправил уведомление.';
 
     } catch (error) {
       console.error(error);
-      formNote.textContent =
-        'Не удалось отправить заявку. Попробуйте позже.';
+      formNote.textContent = 'Ошибка отправки. Попробуйте позже.';
     } finally {
       button.disabled = false;
       button.textContent = 'Отправить заявку ↗';
     }
   });
 }
+
