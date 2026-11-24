@@ -3,20 +3,15 @@ const SUPABASE_URL = 'https://numaxcjgpvqmaxzvyocf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_U3uKkX6IG0qQes6cIR4otQ_dFGH1kIE';
 
 const form = document.getElementById('orderForm');
+const formNote = document.getElementById('formNote');
 
-if (form) {
+if (form && formNote) {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!form.reportValidity()) return;
 
     const button = form.querySelector('button[type="submit"]');
-    const success = document.getElementById('success');
-    const notice = form.querySelector('.notice');
-
-    button.disabled = true;
-    button.textContent = 'Отправляем...';
-
     const data = new FormData(form);
 
     const order = {
@@ -27,6 +22,10 @@ if (form) {
       comment: data.get('comment').trim()
     };
 
+    button.disabled = true;
+    button.textContent = 'Отправляем...';
+    formNote.textContent = 'Отправляем заявку...';
+
     try {
       const response = await fetch(
         `${SUPABASE_URL}/functions/v1/submit-order`,
@@ -34,8 +33,7 @@ if (form) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
+            'apikey': SUPABASE_KEY
           },
           body: JSON.stringify(order)
         }
@@ -47,16 +45,16 @@ if (form) {
         throw new Error(result.error || 'Ошибка отправки');
       }
 
-      if (notice) notice.style.display = 'none';
-      success.textContent = 'Заявка успешно отправлена! Мы скоро свяжемся с вами.';
-      success.style.display = 'block';
       form.reset();
 
-    } catch (error) {
-      success.textContent = 'Не удалось отправить заявку. Попробуйте позже.';
-      success.style.display = 'block';
-      console.error(error);
+      formNote.textContent = result.telegramSent
+        ? 'Заявка отправлена! Уведомление пришло в Telegram.'
+        : 'Заявка сохранена, но уведомление в Telegram не отправлено.';
 
+    } catch (error) {
+      console.error(error);
+      formNote.textContent =
+        'Не удалось отправить заявку. Попробуйте позже.';
     } finally {
       button.disabled = false;
       button.textContent = 'Отправить заявку ↗';
