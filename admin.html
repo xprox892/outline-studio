@@ -1,12 +1,237 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101010"><title>OUTLINE — Admin demo</title><link rel="stylesheet" href="styles.css"></head>
-<body class="admin-body">
-<header class="topbar"><a class="brand" href="index.html">OUTLINE<span>.</span></a><span class="admin-label">ADMIN / DEMO</span><a class="text-link" href="index.html">На сайт ↗</a></header>
-<main class="admin-main">
-  <div class="eyebrow">PRIVATE WORKSPACE · PREVIEW</div><h1>Заявки<span>.</span></h1>
-  <div class="stats"><div><strong id="totalCount">0</strong><span>Всего заявок</span></div><div><strong id="newCount">0</strong><span>Новые</span></div></div>
-  <div class="admin-toolbar"><h2>Все обращения</h2><button class="outline-btn" id="exportBtn">Экспорт CSV ↓</button></div>
-  <div id="ordersList" class="orders-list"><p class="muted">Пока заявок нет. Создай тестовую через форму на сайте.</p></div>
-  <p class="notice warning">Это демонстрационная панель: данные находятся только в локальном хранилище браузера на этом устройстве. Это не защищённый личный кабинет и не синхронизируется с другими устройствами.</p>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OUTLINE STUDIO — Admin</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#f5f2ec;font:15px Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;padding:16px 20px}
+.brand{color:white;text-decoration:none;font-weight:bold;letter-spacing:3px}
+.brand span{color:#c9a46a}
+button,select{padding:12px;background:#c9a46a;color:#111;border:0;border-radius:4px;font-weight:bold}
+input{width:100%;padding:13px;margin:8px 0 16px;background:#181818;border:1px solid #444;color:white}
+.card{background:#181818;border:1px solid #333;padding:18px;margin:14px 0;border-radius:8px}
+h1{font-size:30px}
+.muted{color:#aaa}
+.hidden{display:none!important}
+.order{border-top:1px solid #333;padding:16px 0}
+.order h3{margin:0 0 10px}
+.order p{margin:7px 0;overflow-wrap:anywhere}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.status{background:#222;color:white;border:1px solid #555}
+.error{color:#ff9b9b}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">OUTLINE<span>.</span></a>
+<button id="logout" class="hidden">Выйти</button>
+</header>
+
+<main class="wrap">
+<section id="loginBox" class="card">
+<h1>Личный кабинет</h1>
+<p class="muted">Войди, чтобы посмотреть заявки.</p>
+<form id="loginForm">
+<label>Email</label>
+<input id="email" type="email" required autocomplete="username">
+<label>Пароль</label>
+<input id="password" type="password" required autocomplete="current-password">
+<button type="submit">Войти</button>
+<p id="loginMessage" class="error"></p>
+</form>
+</section>
+
+<section id="dashboard" class="hidden">
+<h1>Заявки<span style="color:#c9a46a">.</span></h1>
+<div class="card">
+<strong id="total">0</strong> — всего заявок
+<div class="tools">
+<button id="refresh">Обновить</button>
+<button id="export">Экспорт CSV</button>
+</div>
+<p id="message" class="muted"></p>
+</div>
+<div id="orders"></div>
+</section>
 </main>
-<script src="admin.js"></script></body></html>
+
+<script type="module">
+import { createClient } from
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const URL = 'https://numaxcjgpvqmaxzvyocf.supabase.co';
+const KEY = 'sb_publishable_U3uKkX6IG0qQes6cIR4otQ_dFGH1kIE';
+const supabase = createClient(URL, KEY);
+
+const loginBox = document.getElementById('loginBox');
+const dashboard = document.getElementById('dashboard');
+const logout = document.getElementById('logout');
+const loginForm = document.getElementById('loginForm');
+const loginMessage = document.getElementById('loginMessage');
+const ordersBox = document.getElementById('orders');
+const message = document.getElementById('message');
+let orders = [];
+
+function showDashboard(show) {
+  loginBox.classList.toggle('hidden', show);
+  dashboard.classList.toggle('hidden', !show);
+  logout.classList.toggle('hidden', !show);
+}
+
+async function loadOrders() {
+  message.textContent = 'Загружаем заявки...';
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id,created_at,establishment_name,service_type,customer_name,contact,comment,status')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    message.textContent = 'Ошибка загрузки: ' + error.message;
+    return;
+  }
+
+  orders = data || [];
+  document.getElementById('total').textContent = orders.length;
+  message.textContent = orders.length ? '' : 'Заявок пока нет.';
+  renderOrders();
+}
+
+function addText(parent, tag, text, className) {
+  const el = document.createElement(tag);
+  el.textContent = text || '—';
+  if (className) el.className = className;
+  parent.appendChild(el);
+  return el;
+}
+
+function renderOrders() {
+  ordersBox.replaceChildren();
+
+  orders.forEach(order => {
+    const card = document.createElement('article');
+    card.className = 'card order';
+
+    addText(card, 'h3', 'Заявка №' + order.id);
+    addText(card, 'p', 'Дата: ' + new Date(order.created_at).toLocaleString('ru-RU'));
+    addText(card, 'p', 'Заведение: ' + order.establishment_name);
+    addText(card, 'p', 'Услуга: ' + order.service_type);
+    addText(card, 'p', 'Имя: ' + order.customer_name);
+    addText(card, 'p', 'Контакт: ' + order.contact);
+    addText(card, 'p', 'Комментарий: ' + (order.comment || '—'));
+
+    const select = document.createElement('select');
+    select.className = 'status';
+
+    const statuses = [
+      ['new', 'Новая'],
+      ['in_progress', 'В работе'],
+      ['done', 'Выполнена']
+    ];
+
+    statuses.forEach(([value, label]) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      select.appendChild(option);
+    });
+
+    select.value = order.status || 'new';
+
+    const save = document.createElement('button');
+    save.textContent = 'Сохранить статус';
+    save.style.marginLeft = '8px';
+
+    save.addEventListener('click', async () => {
+      save.disabled = true;
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: select.value })
+        .eq('id', order.id);
+
+      save.disabled = false;
+
+      if (error) {
+        message.textContent = 'Не удалось изменить статус: ' + error.message;
+      } else {
+        order.status = select.value;
+        message.textContent = 'Статус заявки №' + order.id + ' обновлён.';
+      }
+    });
+
+    const row = document.createElement('div');
+    row.className = 'tools';
+    row.append(select, save);
+    card.appendChild(row);
+    ordersBox.appendChild(card);
+  });
+}
+
+loginForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  loginMessage.textContent = 'Входим...';
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value
+  });
+
+  if (error) {
+    loginMessage.textContent = 'Ошибка входа: ' + error.message;
+    return;
+  }
+
+  loginMessage.textContent = '';
+  showDashboard(true);
+  await loadOrders();
+});
+
+logout.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  showDashboard(false);
+  ordersBox.replaceChildren();
+});
+
+document.getElementById('refresh').addEventListener('click', loadOrders);
+
+document.getElementById('export').addEventListener('click', () => {
+  const columns = [
+    'id','created_at','establishment_name','service_type',
+    'customer_name','contact','comment','status'
+  ];
+
+  const escape = value =>
+    '"' + String(value ?? '').replace(/"/g, '""') + '"';
+
+  const csv = [
+    columns.join(';'),
+    ...orders.map(order =>
+      columns.map(column => escape(order[column])).join(';')
+    )
+  ].join('\n');
+
+  const blob = new Blob(['\uFEFF' + csv], {
+    type: 'text/csv;charset=utf-8;'
+  });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'outline-orders.csv';
+  link.click();
+  URL.revokeObjectURL(link.href);
+});
+
+const { data } = await supabase.auth.getSession();
+
+if (data.session) {
+  showDashboard(true);
+  await loadOrders();
+}
+</script>
+</body>
+</html>
